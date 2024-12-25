@@ -1,31 +1,28 @@
-from telethon.tl.types import PeerUser, PeerChat, PeerChannel, MessageEntityMention, Channel
+from telethon.tl.types import PeerChat,  Channel
+from telethon.tl.types import MessageMediaPhoto, MessageMediaDocument, MessageMediaDice
 from db_handler import db
-
+from strHandelr import str_handelr
 def message_handler(events):
     # 过滤掉自己的消息
-    if events.out:
-        return
-    # 消息筛选
-    if events.message and not events.media:
-        # 文本消息
-        print_text(events)
-    elif hasattr(events, 'media'):
-        if isinstance(events.media, events.MessageMediaPhoto):
-            # 图片消息
-            print(f"图片消息")
-        elif isinstance(events.media, events.MessageMediaDocument):
-            # 文件或媒体消息
-            print(f"媒体消息")
-        elif isinstance(events.media, events.MessageMediaDice):
-            # 表情或骰子消息
-            print(f"表情消息")
-        else:
-            # 其他类型
-            print(f"其他消息: {events.message}")
+    # if events.out:
+    #     return
+    print_text(events)
 
 def print_text(event):
     """打印消息详细信息"""
     try:
+        #  添加调试日志
+        # print("\n=== Debug Info ===")
+        # print(f"Event type: {type(event)}")
+        # if hasattr(event, 'message'):
+        #     print(f"Message type: {type(event.message)}")
+        #     print(f"Message attributes: {dir(event.message)}")
+        #     if hasattr(event.message, 'media'):
+        #         print(f"Media type: {type(event.message.media)}")
+        #         if event.message.media:
+        #             print(f"Media attributes: {dir(event.message.media)}")
+        # print("=== End Debug Info ===\n")
+
         # 准备要保存的数据
         data = {
             'username': '否',
@@ -105,14 +102,42 @@ def print_text(event):
 
         # 处理消息内容
         if message:
-            text = getattr(message, 'text', '')
-            if text:
-                print(f"💬 消息内容👇👇👇👇👇👇👇👇👇\n {text}")
-                data['message'] = text
+            if hasattr(message, 'media') and message.media:
+                media_type = type(message.media).__name__
+                print(f"📎 媒体类型: {media_type}")
+                
+                if isinstance(message.media, MessageMediaPhoto):
+                    media_text = '[图片消息]'
+                elif isinstance(message.media, MessageMediaDocument):
+                    if hasattr(message.media.document, 'mime_type') and message.media.document.mime_type.startswith('video'):
+                        media_text = '[视频消息]'
+                    else:
+                        media_text = '[文件消息]'
+                elif isinstance(message.media, MessageMediaDice):
+                    media_text = '[表情消息]'
+                else:
+                    media_text = f"[{media_type} 消息]"
+                
+                print(f"💬 消息内容👇👇👇👇👇👇👇👇👇\n {media_text}")
+                data['message'] = media_text
+            else:
+                # 检查是否有文本内容
+                text = getattr(message, 'text', None) or getattr(message, 'raw_text', None) or getattr(message, 'message', None)
+                if text:
+                    print(f"💬 消息内容👇👇👇👇👇👇👇👇👇\n {text}")
+                    # 纯文本提交给文本解析器
+                    str_handelr(text)
+                    data['message'] = text
+                else:
+                    print(f"💬 消息内容👇👇👇👇👇👇👇👇👇\n [空消息]")
+                    data['message'] = '[空消息]'
+        
         print("\n")
         
         # 保存数据到数据库
         db.save_message(data)
         
     except Exception as e:
-        print(f"Error: {e}")
+        print(f"处理消息时出错: {str(e)}")
+        import traceback
+        print(traceback.format_exc())

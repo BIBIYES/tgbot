@@ -40,7 +40,10 @@ class Tgbot:
             # 等待用户输入验证码
             await self.client.sign_in(phone, input('请输入验证码: '))
         
-        
+        # 设置全局客户端实例
+        from strHandelr import TelegramSender
+        TelegramSender.set_client(self.client)
+
         async def handle_message(event):
             """
             处理接收到的消息事件
@@ -77,4 +80,3 @@ class Tgbot:
             print("\n正在停止机器人...")
             self.client.loop.run_until_complete(self.stop())
             print("机器人已成功停止！")
-        
