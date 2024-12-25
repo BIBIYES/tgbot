@@ -4,8 +4,8 @@ from db_handler import db
 from strHandelr import str_handelr
 def message_handler(events):
     # 过滤掉自己的消息
-    # if events.out:
-    #     return
+    if events.out:
+        return
     print_text(events)
 
 def print_text(event):
