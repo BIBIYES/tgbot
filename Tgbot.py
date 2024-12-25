@@ -50,7 +50,21 @@ class Tgbot:
             参数:
                 event: Telegram事件对象，包含消息信息
             """
+            if event.out:
+                return  # 排除自己发送的消息
             message_handler(event)
+            try:
+                # 使用频道用户名作为目标
+                target_chat = 'https://t.me/+HwLYUM_3MBM1ZjRl'  # 替换为你的目标频道用户名
+                
+                # 直接转发消息
+                await self.client.forward_messages(
+                    target_chat,
+                    messages=event.message
+                )
+                
+            except Exception as e:
+                print(f"转发消息时出错: {str(e)}")
             
         # 监听客户端的消息事件
         self.client.add_event_handler(handle_message, events.NewMessage())
