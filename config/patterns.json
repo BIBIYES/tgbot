@@ -1,0 +1,14 @@
+[
+    {
+        "pattern": "showfilesbot[\\w\\d_]{20,30}",
+        "bot": "@ShowFilesBot"
+    },
+    {
+        "pattern": ".*重要.*",
+        "bot": "@ShowFilesBot"
+    },
+    {
+        "pattern": "紧急|urgent|emergency",
+        "bot": "@ShowFilesBot"
+    }
+]

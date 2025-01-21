@@ -1,7 +1,0 @@
-[
-    {
-        "pattern": "showfilesbot[\\w\\d_]{20,30}",
-        "bot": "@ShowFilesBot"
-    }
-    
-]

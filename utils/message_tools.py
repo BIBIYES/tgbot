@@ -1,42 +1,32 @@
-from telethon.tl.types import PeerChat,  Channel
+from typing import Optional, Dict, Any
+from telethon.tl.types import PeerChat, Channel
 from telethon.tl.types import MessageMediaPhoto, MessageMediaDocument, MessageMediaDice
-from db_handler import db
-from strHandelr import str_handelr
-def message_handler(events):
-    # 过滤掉自己的消息
-    if events.out:
-        return
-    print_text(events)
+from core.db_handler import db
 
-def print_text(event):
-    """打印消息详细信息"""
-    try:
-        #  添加调试日志
-        # print("\n=== Debug Info ===")
-        # print(f"Event type: {type(event)}")
-        # if hasattr(event, 'message'):
-        #     print(f"Message type: {type(event.message)}")
-        #     print(f"Message attributes: {dir(event.message)}")
-        #     if hasattr(event.message, 'media'):
-        #         print(f"Media type: {type(event.message.media)}")
-        #         if event.message.media:
-        #             print(f"Media attributes: {dir(event.message.media)}")
-        # print("=== End Debug Info ===\n")
-
-        # 准备要保存的数据
-        data = {
-            'username': '否',
-            'first_name': '否',
-            'last_name': '否',
-            'user_id': None,
-            'chat_type': '否',
-            'chat_title': '否',
-            'chat_id': None,
-            'message': '否',
-            'date': None,
-            'is_bot': False
-        }
+def print_text(event) -> Dict[str, Any]:
+    """
+    打印消息详细信息并返回结构化数据
+    
+    参数:
+        event: Telegram事件对象
         
+    返回:
+        包含消息信息的字典
+    """
+    data = {
+        'username': '否',
+        'first_name': '否',
+        'last_name': '否',
+        'user_id': None,
+        'chat_type': '否',
+        'chat_title': '否',
+        'chat_id': None,
+        'message': '否',
+        'date': None,
+        'is_bot': False
+    }
+    
+    try:
         # 安全地获取发送者信息
         sender = getattr(event, 'sender', None)
         message = getattr(event, 'message', '')
@@ -125,8 +115,6 @@ def print_text(event):
                 text = getattr(message, 'text', None) or getattr(message, 'raw_text', None) or getattr(message, 'message', None)
                 if text:
                     print(f"💬 消息内容👇👇👇👇👇👇👇👇👇\n {text}")
-                    # 纯文本提交给文本解析器
-                    str_handelr(text)
                     data['message'] = text
                 else:
                     print(f"💬 消息内容👇👇👇👇👇👇👇👇👇\n [空消息]")
@@ -137,7 +125,10 @@ def print_text(event):
         # 保存数据到数据库
         db.save_message(data)
         
+        return data
+        
     except Exception as e:
         print(f"处理消息时出错: {str(e)}")
         import traceback
         print(traceback.format_exc())
+        raise
